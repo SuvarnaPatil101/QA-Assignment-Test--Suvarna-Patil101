@@ -1,0 +1,166 @@
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+public class LoginPageTest {
+
+    private WebDriver driver;
+    private String baseUrl = "your_web_application_url";
+
+    @BeforeClass
+    public void setUp() {
+        // Set the path of the ChromeDriver executable
+        System.setProperty("webdriver.chrome.driver", "path/to/chromedriver");
+
+        // Initialize ChromeDriver
+        driver = new ChromeDriver();
+
+        // Navigate to the login page
+        driver.get("https://www.facebook.com/");
+    }
+
+    @Test(priority = 1)
+    public void testValidLogin() {
+        // Test case for valid login
+        String username = "validUsername";
+        String password = "validPassword";
+
+        login(username, password);
+
+        // Verify that the login was successful (check for elements on the post-login page)
+        WebElement welcomeMessage = driver.findElement(By.id("welcomeMessage"));
+        Assert.assertTrue(welcomeMessage.isDisplayed(), "Login was not successful");
+    }
+
+    @Test(priority = 2)
+    public void testInvalidLogin() {
+        // Test case for invalid login
+        String username = "invalidUsername";
+        String password = "invalidPassword";
+
+        login(username, password);
+
+        // Verify that an error message is displayed
+        WebElement errorMessage = driver.findElement(By.id("errorMessage"));
+        Assert.assertTrue(errorMessage.isDisplayed(), "Error message not displayed for invalid login");
+    }
+
+    @Test(priority = 3)
+    public void testRetainFieldValuesOnFailedLogin() {
+        // Test case to retain entered values on failed login attempt
+        String username = "validUsername";
+        String password = "invalidPassword";
+
+        // Enter username and password
+        WebElement usernameField = driver.findElement(By.id("username"));
+        usernameField.sendKeys(username);
+
+        WebElement passwordField = driver.findElement(By.id("password"));
+        passwordField.sendKeys(password);
+
+        // Click on the 'Login' button
+        WebElement loginButton = driver.findElement(By.id("loginButton"));
+        loginButton.click();
+
+        // Verify that the entered values are retained
+        Assert.assertEquals(usernameField.getAttribute("value"), username, "Username field value not retained");
+        Assert.assertEquals(passwordField.getAttribute("value"), password, "Password field value not retained");
+    }
+
+    @Test(priority = 4)
+    public void testLoginButtonDisabledOnEmptyFields() {
+        // Test case to check 'Login' button disabled on empty fields
+        WebElement loginButton = driver.findElement(By.id("loginButton"));
+
+        // Verify that the 'Login' button is initially disabled
+        Assert.assertFalse(loginButton.isEnabled(), "'Login' button is enabled with empty fields");
+    }
+
+    @Test(priority = 5)
+    public void testLoginButtonEnabledOnValidInput() {
+        // Test case to check 'Login' button enabled on valid input
+        String username = "validUsername";
+        String password = "validPassword";
+
+        // Enter valid username and password
+        WebElement usernameField = driver.findElement(By.id("username"));
+        usernameField.sendKeys(username);
+
+        WebElement passwordField = driver.findElement(By.id("password"));
+        passwordField.sendKeys(password);
+
+        // Verify that the 'Login' button is enabled
+        WebElement loginButton = driver.findElement(By.id("loginButton"));
+        Assert.assertTrue(loginButton.isEnabled(), "'Login' button is disabled with valid input");
+    }
+
+    @Test(priority = 6)
+    public void testForgotPasswordRedirect() {
+        // Test case to check redirection to password recovery page
+        WebElement forgotPasswordLink = driver.findElement(By.linkText("Forgot Password"));
+        forgotPasswordLink.click();
+
+        // Verify that the URL is the password recovery page URL
+        Assert.assertEquals(driver.getCurrentUrl(), "password_recovery_page_url", "Not redirected to password recovery page");
+    }
+
+    @Test(priority = 7)
+    public void testPasswordRecovery() {
+        // Test case for password recovery
+        String email = "validEmail@example.com";
+
+        // Click on the 'Forgot Password' link
+        WebElement forgotPasswordLink = driver.findElement(By.linkText("Forgot Password"));
+        forgotPasswordLink.click();
+
+        // Enter a registered email address for password recovery
+        WebElement emailField = driver.findElement(By.id("email"));
+        emailField.sendKeys(email);
+
+        // Click on the 'Recover Password' button
+        WebElement recoverPasswordButton = driver.findElement(By.id("recoverPasswordButton"));
+        recoverPasswordButton.click();
+
+        // Verify that a success message is displayed
+        WebElement successMessage = driver.findElement(By.id("successMessage"));
+        Assert.assertTrue(successMessage.isDisplayed(), "Password recovery was not successful");
+
+        // Simulate the password recovery process (access email, reset password, etc.)
+
+        // After successful password reset, redirect to the login page
+        driver.get(baseUrl);
+
+        // Login with the new password
+        String newPassword = "newValidPassword";
+        login(email, newPassword);
+
+        // Verify that the login with the new password is successful
+        WebElement welcomeMessage = driver.findElement(By.id("welcomeMessage"));
+        Assert.assertTrue(welcomeMessage.isDisplayed(), "Login with the new password was not successful");
+    }
+
+    @AfterClass
+    public void tearDown() {
+        // Close the browser after all tests are executed
+        driver.quit();
+    }
+
+    private void login(String username, String password) {
+        // Enter username
+        WebElement usernameField = driver.findElement(By.id("username"));
+        usernameField.sendKeys(username);
+
+        // Enter password
+        WebElement passwordField = driver.findElement(By.id("password"));
+        passwordField.sendKeys(password);
+
+        // Click on the 'Login' button
+        WebElement loginButton = driver.findElement(By.id("loginButton"));
+        loginButton.click();
+    }
+}
